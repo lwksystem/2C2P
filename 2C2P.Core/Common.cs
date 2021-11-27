@@ -270,39 +270,30 @@ namespace _2C2P.Core
             return dateTimeValue;
         }
 
-        public static string ConcatMultiInsert(string insertStatement, string[] insertValues)
-        {
-            var sql = "";
-
+       
+        public static IList<string> GetSqlsInBatches(string insertStatement, IList<string> insertValues)
+        { 
             if (string.IsNullOrWhiteSpace(insertStatement) == false && insertValues != null)
             {
-                insertValues = insertValues.Where(c => c != null).ToArray(); // remove null object
+                insertValues = insertValues.Where(c => c != null).ToList();
 
-                if (insertValues.Length > 0)
+                if (insertValues.Count> 0)
                 {
-                    var insertBatchSize = 1000;
-                    var maxRound = insertValues.Length / insertBatchSize;
-                    if ((insertValues.Length % insertBatchSize) > 0) { maxRound++; }
+                    var batchSize = 1000;
+                    var sqlBatches = new List<string>();
+                    var numberOfBatches = (Int32)Math.Ceiling((decimal)insertValues.Count / batchSize);
 
-                    var value = insertValues.GetEnumerator();
-                    for (var round = 0; round < maxRound; round++)
+                    for (int i = 0; i < numberOfBatches; i++)
                     {
-                        sql = sql + insertStatement;
-                        var intCount = 1;
-
-                        while (value.MoveNext() && value.Current != null)
-                        {
-                            sql = sql + " " + value.Current + ",";
-                            if (++intCount > insertBatchSize) { break; }
-                        }
-
-                        if (sql.Right(1) == ",") { sql = sql.Substring(0, sql.Length - 1); }
-                        sql = sql + "; ";
+                        var valueToInsert = insertValues.Skip(i * batchSize).Take(batchSize);
+                        sqlBatches.Add(insertStatement + string.Join(',', valueToInsert));
                     }
+
+                    return sqlBatches;
                 }
             }
 
-            return sql;
+            return null;
         }
 
         #endregion

@@ -66,7 +66,6 @@ namespace _2C2P.Web.Pages
                 if (!ModelState.IsValid)
                 {
                     Result = "Please correct the form.";
-
                     return Page();
                 }
 
@@ -78,14 +77,11 @@ namespace _2C2P.Web.Pages
                 if (!ModelState.IsValid)
                 {
                     Result = "Unknown format.";
-
                     return Page();
                 }
 
                 var trustedFileNameForFileStorage = Path.GetRandomFileName();
-                var filePath = Path.Combine(
-                    _targetFilePath, trustedFileNameForFileStorage);
-
+                var filePath = Path.Combine(_targetFilePath, trustedFileNameForFileStorage);
 
                 using (var fileStream = System.IO.File.Create(filePath))
                 {
@@ -93,18 +89,22 @@ namespace _2C2P.Web.Pages
                 }
 
 
-                string uploadData = System.IO.File.ReadAllText(filePath);      
+                string uploadData = System.IO.File.ReadAllText(filePath);
+                List<TransactionsModel> transList;
                 var errMsg = "";
+                int rowCount = 0;
+                var outStatus = "";
+
+                var currencyList = _currency.GetAll().Result;
 
                 if (FileUpload.FormFile.FileName.ToLower().Contains(".csv"))
                 {                
-                    int rowCount = 0;
-                    var transList = new List<TransactionsModel>();
+                    transList = new List<TransactionsModel>();
 
                     foreach (string csvRow in uploadData.Split('\n'))
                     {
                         rowCount++;
-                        rowMessage = "Row " + rowCount.ToString() + ": ";
+                        rowMessage = "Row " + rowCount.ToString() + "> ";
                         if (!string.IsNullOrWhiteSpace(csvRow))
                         {
                             var transModel = new TransactionsModel();
@@ -115,7 +115,16 @@ namespace _2C2P.Web.Pages
                             {
                                 if (colCount == 0) { transModel.TransactionId = FileRec.Trim(); }
                                 else if (colCount == 1) { transModel.TransactionAmount = Convert.ToDecimal(FileRec.Trim()); }
-                                else if (colCount == 2) { transModel.CurrencyCode = FileRec.Trim(); }
+                                else if (colCount == 2) 
+                                { 
+                                    transModel.CurrencyCode = FileRec.Trim();
+                                    if (!currencyList.Exists(x => x.CurrencyCode == transModel.CurrencyCode))
+                                    {
+                                        errMsg = rowMessage + "Invalid Currency Code: " + transModel.CurrencyCode;
+                                        _logger.LogError(errMsg);
+                                        return BadRequest(errMsg);
+                                    }
+                                }
                                 else if (colCount == 3)
                                 {
                                     transModel.TransactionDate = Convert.ToDateTime(FileRec.Trim());
@@ -124,7 +133,7 @@ namespace _2C2P.Web.Pages
                                 colCount++;
                             }
 
-                            var outStatus = OutputStatus(transModel.InputStatus);
+                            outStatus = OutputStatus(transModel.InputStatus);
                             if (string.IsNullOrEmpty(outStatus))
                             {
                                 errMsg = rowMessage + "Invalid Status: " + transModel.InputStatus;
@@ -150,13 +159,50 @@ namespace _2C2P.Web.Pages
                 }
                 else //xml
                 {
+                   
                     XmlSerializer serializer = new XmlSerializer(typeof(List<_2C2P.Web.Models.Transaction>), new XmlRootAttribute("Transactions"));
                     StringReader stringReader = new StringReader(uploadData);
 
-                    List<_2C2P.Web.Models.Transaction> transList = (List<_2C2P.Web.Models.Transaction>)serializer.Deserialize(stringReader);
+                    List<_2C2P.Web.Models.Transaction> xmlList = (List<_2C2P.Web.Models.Transaction>)serializer.Deserialize(stringReader);
 
-                    if (transList != null && transList.Count > 0)
+                    if (xmlList != null && xmlList.Count > 0)
                     {
+                        transList = new List<TransactionsModel>();
+
+                        foreach(var row in xmlList)
+                        {
+                            rowCount++;
+                            rowMessage = "Row " + rowCount.ToString() + "> ";
+                            var transModel = new TransactionsModel();
+                            transModel.TransactionId = row.id;
+                            transModel.TransactionAmount = row.PaymentDetails.Amount;
+                            transModel.CurrencyCode = row.PaymentDetails.CurrencyCode;
+                            if (!currencyList.Exists(x => x.CurrencyCode == transModel.CurrencyCode))
+                            {
+                                errMsg = rowMessage + "Invalid Currency Code: " + transModel.CurrencyCode;
+                                _logger.LogError(errMsg);
+                                return BadRequest(errMsg);
+                            }
+                            transModel.TransactionDate = row.TransactionDate;
+                            transModel.InputStatus = row.Status;
+                            
+
+                            outStatus = OutputStatus(transModel.InputStatus);
+                            if (string.IsNullOrEmpty(outStatus))
+                            {
+                                errMsg = rowMessage + "Invalid Status: " + transModel.InputStatus;
+                                _logger.LogError(errMsg);
+                                return BadRequest(errMsg);
+                            }
+                            else
+                            {
+                                transModel.FileType = "xml";
+                                transModel.OutputStatus = outStatus;
+                            }
+                            transModel.Validate();
+                            transList.Add(transModel);
+
+                        }
 
                     }
                     else
@@ -164,14 +210,16 @@ namespace _2C2P.Web.Pages
                         Result = "Unknown format.";
                         return Page();
                     }
-                    
-
-                  
-                    
+                   
                 }
 
-              
-
+                var result = _transaction.ImportData(transList);
+                if (result.Result == 0)
+                {
+                    errMsg = "Import Failed!";
+                    _logger.LogError(errMsg);
+                    return BadRequest(errMsg);
+                }
 
             }
             catch (Exception e)

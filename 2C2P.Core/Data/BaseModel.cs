@@ -221,7 +221,7 @@ namespace _2C2P.Core.Data
                     if (value != null && value.ToString().Length < dataType.MinLen)
                     {
                         errorMessage = string.IsNullOrWhiteSpace(dataType.LenErrMsg)
-                            ? "The field " + dataType.Description + " must be a string with minimum length of." +
+                            ? "The field " + dataType.Description + " must be a string with minimum length of " +
                               dataType.MinLen
                             : dataType.LenErrMsg;
                         throw new AppException(errorMessage);
@@ -232,7 +232,7 @@ namespace _2C2P.Core.Data
                     if (value != null && value.ToString().Length > dataType.MaxLen)
                     {
                         errorMessage = string.IsNullOrWhiteSpace(dataType.LenErrMsg)
-                            ? "The field " + dataType.Description + " must be a string with maximum length of." +
+                            ? "The field " + dataType.Description + " must be a string with maximum length of " +
                               dataType.MaxLen
                             : dataType.LenErrMsg;
                         throw new AppException(errorMessage);
