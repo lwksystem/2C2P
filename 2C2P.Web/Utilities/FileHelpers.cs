@@ -210,7 +210,7 @@ namespace _2C2P.Web.Utilities
 
             using (var reader = new BinaryReader(data))
             {
-                if (ext.Equals(".txt") || ext.Equals(".csv") || ext.Equals(".prn"))
+                if (ext.Equals(".txt") || ext.Equals(".csv") || ext.Equals(".xml"))
                 {
                     if (_allowedChars.Length == 0)
                     {
