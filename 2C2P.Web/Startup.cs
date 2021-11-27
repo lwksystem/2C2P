@@ -8,6 +8,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using _2C2P.Core.Data;
+using _2C2P.DataAccess.Logics;
+using _2C2P.DataAccess.Interfaces;
 
 namespace _2C2P.Web
 {
@@ -23,6 +26,15 @@ namespace _2C2P.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+
+            //Get setting from appsettings.json
+            var connSetting = Configuration.GetSection("DatabaseConnection").Get<ConnectionSetting>();
+
+            services.AddSingleton(connSetting);
+            services.AddScoped<IDatabase, Database>();
+
+            services.AddScoped<ICurrencyLogic, CurrencyLogic>();
+
             services.AddRazorPages();
         }
 

@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "2C2P.Web", "2C2P.Web\2C2P.W
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2C2P.Core", "2C2P.Core\2C2P.Core.csproj", "{C5308043-EB3C-4E64-9740-5DE346228D23}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2C2P.Data", "2C2P.Data\2C2P.Data.csproj", "{616F6431-82A8-4D3D-8142-7DE833BC071A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "2C2P.DataAccess", "2C2P.Data\2C2P.DataAccess.csproj", "{616F6431-82A8-4D3D-8142-7DE833BC071A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
