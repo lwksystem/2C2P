@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
-    <RootNamespace>_2C2P.Data</RootNamespace>
+    <RootNamespace>_2C2P.DataAccess</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
