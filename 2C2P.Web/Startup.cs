@@ -42,17 +42,16 @@ namespace _2C2P.Web
             services.AddScoped<ITransactionsLogic, TransactionsLogic>();
 
             services.AddRazorPages();
+            services.AddControllers().AddNewtonsoftJson();
 
             // To list physical files from a path provided by configuration:
-           var physicalProvider = new PhysicalFileProvider(Configuration.GetValue<string>("StoredFilesPath"));
+            var physicalProvider = new PhysicalFileProvider(Configuration.GetValue<string>("StoredFilesPath"));
 
             // To list physical files in the temporary files folder, use:
             //var physicalProvider = new PhysicalFileProvider(Path.GetTempPath());
 
             services.AddSingleton<IFileProvider>(physicalProvider);
 
-
-            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -76,11 +75,11 @@ namespace _2C2P.Web
 
             IList<CultureInfo> supportedCultures = new List<CultureInfo>
             {
-                new CultureInfo("ar-GB"), //Arabic SY
+                new CultureInfo("en-GB")
             };
             var localizationOptions = new RequestLocalizationOptions
             {
-                DefaultRequestCulture = new RequestCulture("en-GB"), //English US will be the default culture (for new visitors)
+                DefaultRequestCulture = new RequestCulture(culture: "en-GB", uiCulture: "en-GB"), 
                 SupportedCultures = supportedCultures,
                 SupportedUICultures = supportedCultures
             };
@@ -91,6 +90,7 @@ namespace _2C2P.Web
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
+                endpoints.MapControllers();
             });
         }
     }

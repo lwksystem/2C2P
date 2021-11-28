@@ -13,5 +13,6 @@ namespace _2C2P.DataAccess.Interfaces
    
         Task<Int32> ImportData(List<TransactionsModel> list);
 
+        Task<List<TransactionsModel>> GetList(string currencyCode, DateTime? transactionDateFrom, DateTime? transactionDateTo, string status);
     }
 }
